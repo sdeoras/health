@@ -14,6 +14,10 @@ const (
 	OutputMesg
 )
 
+const (
+	StdRoute = "/health"
+)
+
 // Provider makes an http func for health check
 type Provider interface {
 	// Provide provides an http handler

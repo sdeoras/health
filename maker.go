@@ -8,9 +8,8 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/sdeoras/jwt"
-
 	"github.com/golang/protobuf/proto"
+	"github.com/sdeoras/jwt"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 )
 
