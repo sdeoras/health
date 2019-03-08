@@ -16,7 +16,7 @@ import (
 type provider struct {
 	services     map[string]func(w http.ResponseWriter, r *http.Request)
 	outputFormat OutputFormat
-	validator    jwt.Validator
+	manager      jwt.Manager
 	mu           sync.Mutex
 }
 
@@ -32,9 +32,9 @@ func (p *provider) Register(service string, handler func(w http.ResponseWriter, 
 // Provide returns a http handler
 func (p *provider) Provide() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if p.validator != nil {
+		if p.manager != nil {
 			// validate input request
-			err := p.validator.Validate(r)
+			err := p.manager.Validate(r)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
