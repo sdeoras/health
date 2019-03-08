@@ -29,10 +29,10 @@ type Provider interface {
 
 // New provides an instance of health check func Provider.
 // It takes jwt validator if jwt auth is required. Pass nil for jwt operator if not required.
-func New(outputFormat OutputFormat, validator jwt.Validator) Provider {
+func New(outputFormat OutputFormat, manager jwt.Manager) Provider {
 	m := new(provider)
 	m.outputFormat = outputFormat
-	m.validator = validator
+	m.manager = manager
 	m.services = make(map[string]func(w http.ResponseWriter, r *http.Request))
 	return m
 }
