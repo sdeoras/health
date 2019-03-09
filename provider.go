@@ -129,3 +129,37 @@ func (p *provider) Request(service, url string) (*http.Request, error) {
 		return r, nil
 	}
 }
+
+func (p *provider) Response(resp *http.Response) (string, error) {
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("%s:%s. Mesg:%s",
+			"expected status 200 OK, got", resp.Status, string(b))
+	}
+
+	response := new(healthpb.HealthCheckResponse)
+
+	switch p.outputFormat {
+	case OutputProto:
+		if err := proto.Unmarshal(b, response); err != nil {
+			return "", err
+		} else {
+			return response.Status.String(), nil
+		}
+	case OutputJSON:
+		if err := json.Unmarshal(b, response); err != nil {
+			return "", err
+		} else {
+			return response.Status.String(), nil
+		}
+	case OutputMesg:
+		return string(b), nil
+	default:
+		return "", fmt.Errorf("invalid output format, cannot unmarshal")
+	}
+}
