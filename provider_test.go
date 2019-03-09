@@ -19,7 +19,7 @@ func TestMaker_Register_OutputProto(t *testing.T) {
 
 	m := NewProvider(OutputProto, nil, nil)
 	m.Register(service, nil)
-	f := m.Provide()
+	f := m.NewHTTPHandler()
 
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(f)
@@ -70,7 +70,7 @@ func TestMaker_Register_OutputJSON(t *testing.T) {
 
 	m := NewProvider(OutputJSON, nil, nil)
 	m.Register(service, nil)
-	f := m.Provide()
+	f := m.NewHTTPHandler()
 
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(f)
@@ -121,7 +121,7 @@ func TestMaker_Register_OutputMesg(t *testing.T) {
 
 	m := NewProvider(OutputMesg, nil, nil)
 	m.Register(service, nil)
-	f := m.Provide()
+	f := m.NewHTTPHandler()
 
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(f)
@@ -169,8 +169,8 @@ func TestMaker_Register_Redirect_OutputProto(t *testing.T) {
 	mRedirect.Register(service, nil)
 
 	m := NewProvider(OutputMesg, nil, nil)
-	m.Register(service, mRedirect.Provide())
-	f := m.Provide()
+	m.Register(service, mRedirect.NewHTTPHandler())
+	f := m.NewHTTPHandler()
 
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(f)
@@ -220,7 +220,7 @@ func TestMaker_NotRegistered_OutputProto(t *testing.T) {
 	service := "my-service"
 
 	m := NewProvider(OutputProto, nil, nil)
-	f := m.Provide()
+	f := m.NewHTTPHandler()
 
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(f)

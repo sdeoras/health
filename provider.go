@@ -13,6 +13,7 @@ import (
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 )
 
+// provider implements Provider interface
 type provider struct {
 	services     map[string]func(w http.ResponseWriter, r *http.Request)
 	outputFormat OutputFormat
@@ -30,8 +31,8 @@ func (p *provider) Register(service string, handler func(w http.ResponseWriter, 
 	p.services[service] = handler
 }
 
-// Provide returns a http handler
-func (p *provider) Provide() func(w http.ResponseWriter, r *http.Request) {
+// NewHTTPHandler returns a http handler
+func (p *provider) NewHTTPHandler() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if p.jwtManager != nil {
 			// validate input request
@@ -104,8 +105,8 @@ func (p *provider) Provide() func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Request prepares an http request for a service to check health status
-func (p *provider) Request(service, url string) (*http.Request, error) {
+// NewHTTPRequest prepares an http request for a service to check health status
+func (p *provider) NewHTTPRequest(service, url string) (*http.Request, error) {
 	request := new(healthpb.HealthCheckRequest)
 	request.Service = service
 
@@ -130,7 +131,9 @@ func (p *provider) Request(service, url string) (*http.Request, error) {
 	}
 }
 
-func (p *provider) Response(resp *http.Response) (bool, string, error) {
+// ReadResponseAndClose reads http response to extract health status received from server
+// and closes it
+func (p *provider) ReadResponseAndClose(resp *http.Response) (bool, string, error) {
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return false, "", err
