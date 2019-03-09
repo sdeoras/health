@@ -16,7 +16,8 @@ import (
 type provider struct {
 	services     map[string]func(w http.ResponseWriter, r *http.Request)
 	outputFormat OutputFormat
-	manager      jwt.Manager
+	jwtManager   jwt.Manager
+	jwtClaims    map[string]interface{}
 	mu           sync.Mutex
 }
 
@@ -32,9 +33,9 @@ func (p *provider) Register(service string, handler func(w http.ResponseWriter, 
 // Provide returns a http handler
 func (p *provider) Provide() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if p.manager != nil {
+		if p.jwtManager != nil {
 			// validate input request
-			err := p.manager.Validate(r)
+			err := p.jwtManager.Validate(r)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
@@ -100,5 +101,31 @@ func (p *provider) Provide() func(w http.ResponseWriter, r *http.Request) {
 		case OutputMesg:
 			_, _ = fmt.Fprintf(w, "%s", response.Status.String())
 		}
+	}
+}
+
+// Request prepares an http request for a service to check health status
+func (p *provider) Request(service, url string) (*http.Request, error) {
+	request := new(healthpb.HealthCheckRequest)
+	request.Service = service
+
+	b, err := proto.Marshal(request)
+	if err != nil {
+		return nil, err
+	}
+
+	if p.jwtManager != nil {
+		if r, err := p.jwtManager.Request(http.MethodPost, url, p.jwtClaims, b); err != nil {
+			return nil, err
+		} else {
+			return r, nil
+		}
+	} else {
+		r, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(b))
+		if err != nil {
+			return nil, err
+		}
+
+		return r, nil
 	}
 }
