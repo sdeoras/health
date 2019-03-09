@@ -31,8 +31,8 @@ type Provider interface {
 	// client side ---------
 	// Request prepares an http request for a service to check health status
 	Request(service, url string) (*http.Request, error)
-	// Response gets a health response string from http response or error
-	Response(resp *http.Response) (string, error)
+	// Response gets a health response status, string and error from http response
+	Response(resp *http.Response) (bool, string, error)
 }
 
 // New provides an instance of health check func Provider.
