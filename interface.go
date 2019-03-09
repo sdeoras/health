@@ -20,19 +20,28 @@ const (
 
 // Provider makes an http func for health check
 type Provider interface {
-	// Provide provides an http handler
-	Provide() func(w http.ResponseWriter, r *http.Request)
 	// Register registers upstream services and corresponding redirection.
 	// Pass nil handler if you wish to provide health status without further redirection.
 	Register(service string, handler func(w http.ResponseWriter, r *http.Request))
+
+	// server side ---------
+	// Provide provides an http handler
+	Provide() func(w http.ResponseWriter, r *http.Request)
+
+	// client side ---------
+	// Request prepares an http request for a service to check health status
+	Request(service, url string) (*http.Request, error)
 }
 
 // New provides an instance of health check func Provider.
 // It takes jwt validator if jwt auth is required. Pass nil for jwt operator if not required.
-func New(outputFormat OutputFormat, manager jwt.Manager) Provider {
-	m := new(provider)
-	m.outputFormat = outputFormat
-	m.manager = manager
-	m.services = make(map[string]func(w http.ResponseWriter, r *http.Request))
-	return m
+func NewProvider(outputFormat OutputFormat,
+	jwtManager jwt.Manager,
+	jwtClaims map[string]interface{}) Provider {
+	p := new(provider)
+	p.outputFormat = outputFormat
+	p.jwtManager = jwtManager
+	p.jwtClaims = jwtClaims
+	p.services = make(map[string]func(w http.ResponseWriter, r *http.Request))
+	return p
 }
