@@ -9,7 +9,6 @@ import (
 	"sync"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/sdeoras/jwt"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 )
 
@@ -17,8 +16,6 @@ import (
 type provider struct {
 	services     map[string]func(w http.ResponseWriter, r *http.Request)
 	outputFormat OutputFormat
-	jwtManager   jwt.Manager
-	jwtClaims    map[string]interface{}
 	mu           sync.Mutex
 }
 
@@ -34,15 +31,6 @@ func (p *provider) Register(service string, handler func(w http.ResponseWriter, 
 // NewHTTPHandler returns a http handler
 func (p *provider) NewHTTPHandler() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if p.jwtManager != nil {
-			// validate input request
-			err := p.jwtManager.Validate(r)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-		}
-
 		request := new(healthpb.HealthCheckRequest)
 		response := new(healthpb.HealthCheckResponse)
 
@@ -115,20 +103,7 @@ func (p *provider) NewHTTPRequest(service, url string) (*http.Request, error) {
 		return nil, err
 	}
 
-	if p.jwtManager != nil {
-		if r, err := p.jwtManager.Request(http.MethodPost, url, p.jwtClaims, b); err != nil {
-			return nil, err
-		} else {
-			return r, nil
-		}
-	} else {
-		r, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(b))
-		if err != nil {
-			return nil, err
-		}
-
-		return r, nil
-	}
+	return http.NewRequest(http.MethodPost, url, bytes.NewReader(b))
 }
 
 // ReadResponseAndClose reads http response to extract health status received from server
