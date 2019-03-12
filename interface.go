@@ -2,8 +2,6 @@ package health
 
 import (
 	"net/http"
-
-	"github.com/sdeoras/jwt"
 )
 
 type OutputFormat int
@@ -37,13 +35,9 @@ type Provider interface {
 
 // New provides an instance of health check func Provider.
 // It takes jwt validator if jwt auth is required. Pass nil for jwt operator if not required.
-func NewProvider(outputFormat OutputFormat,
-	jwtManager jwt.Manager,
-	jwtClaims map[string]interface{}) Provider {
+func NewProvider(outputFormat OutputFormat) Provider {
 	p := new(provider)
 	p.outputFormat = outputFormat
-	p.jwtManager = jwtManager
-	p.jwtClaims = jwtClaims
 	p.services = make(map[string]func(w http.ResponseWriter, r *http.Request))
 	return p
 }

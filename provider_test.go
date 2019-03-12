@@ -17,7 +17,7 @@ import (
 func TestMaker_Register_OutputProto(t *testing.T) {
 	service := "my-service"
 
-	m := NewProvider(OutputProto, nil, nil)
+	m := NewProvider(OutputProto)
 	m.Register(service, nil)
 	f := m.NewHTTPHandler()
 
@@ -68,7 +68,7 @@ func TestMaker_Register_OutputProto(t *testing.T) {
 func TestMaker_Register_OutputJSON(t *testing.T) {
 	service := "my-service"
 
-	m := NewProvider(OutputJSON, nil, nil)
+	m := NewProvider(OutputJSON)
 	m.Register(service, nil)
 	f := m.NewHTTPHandler()
 
@@ -119,7 +119,7 @@ func TestMaker_Register_OutputJSON(t *testing.T) {
 func TestMaker_Register_OutputMesg(t *testing.T) {
 	service := "my-service"
 
-	m := NewProvider(OutputMesg, nil, nil)
+	m := NewProvider(OutputMesg)
 	m.Register(service, nil)
 	f := m.NewHTTPHandler()
 
@@ -165,10 +165,10 @@ func TestMaker_Register_OutputMesg(t *testing.T) {
 func TestMaker_Register_Redirect_OutputProto(t *testing.T) {
 	service := "my-service"
 
-	mRedirect := NewProvider(OutputProto, nil, nil)
+	mRedirect := NewProvider(OutputProto)
 	mRedirect.Register(service, nil)
 
-	m := NewProvider(OutputMesg, nil, nil)
+	m := NewProvider(OutputMesg)
 	m.Register(service, mRedirect.NewHTTPHandler())
 	f := m.NewHTTPHandler()
 
@@ -219,7 +219,7 @@ func TestMaker_Register_Redirect_OutputProto(t *testing.T) {
 func TestMaker_NotRegistered_OutputProto(t *testing.T) {
 	service := "my-service"
 
-	m := NewProvider(OutputProto, nil, nil)
+	m := NewProvider(OutputProto)
 	f := m.NewHTTPHandler()
 
 	rr := httptest.NewRecorder()
