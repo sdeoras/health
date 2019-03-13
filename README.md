@@ -7,7 +7,7 @@ for your micro-services
 import "github.com/sdeoras/health"
 
 func main() {
-	h := health.New(health.OutputProto, nil, nil)
+	h := health.New(health.OutputProto)
 	h.Register("myService", nil)
 	f := h.NewHTTPHandler()
 	_ = f // f is your http handler that you can use on the server side
