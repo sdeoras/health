@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"path/filepath"
 	"testing"
 
 	"github.com/golang/protobuf/proto"
@@ -276,7 +275,7 @@ func TestMaker_Register_Get_URL_Proto(t *testing.T) {
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(f)
 
-	req, err := http.NewRequest(http.MethodGet, filepath.Join(StdRoute, service), nil)
+	req, err := http.NewRequest(http.MethodGet, StdRoute+"?format=proto&service=my-service", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -316,7 +315,7 @@ func TestMaker_Register_Get_URL_JSON(t *testing.T) {
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(f)
 
-	req, err := http.NewRequest(http.MethodGet, filepath.Join(StdRoute, service)+"?format=json", nil)
+	req, err := http.NewRequest(http.MethodGet, StdRoute+"?format=json&service=my-service", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -356,7 +355,7 @@ func TestMaker_Register_Get_URL_Mesg(t *testing.T) {
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(f)
 
-	req, err := http.NewRequest(http.MethodGet, filepath.Join(StdRoute, service)+"?format=mesg", nil)
+	req, err := http.NewRequest(http.MethodGet, StdRoute+"?format=mesg&service=my-service", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
