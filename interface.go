@@ -4,18 +4,6 @@ import (
 	"net/http"
 )
 
-type OutputFormat int
-
-const (
-	OutputProto OutputFormat = iota
-	OutputJSON
-	OutputMesg
-)
-
-const (
-	StdRoute = "/health"
-)
-
 // Provider provides ways to send and receive health status for your http micro-services
 type Provider interface {
 	// Register registers upstream services and corresponding redirection.
@@ -29,6 +17,8 @@ type Provider interface {
 	// client side ---------
 	// NewHTTPRequest prepares an http request for a service to check health status
 	NewHTTPRequest(service, url string) (*http.Request, error)
+	// SetQuery sets query in input url producing modified url
+	SetQuery(service, rawurl string) (string, error)
 	// ReadResponseAndClose gets a health response status, string and error from http response
 	ReadResponseAndClose(resp *http.Response) (bool, string, error)
 }

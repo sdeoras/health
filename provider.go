@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/golang/protobuf/proto"
@@ -34,19 +37,43 @@ func (p *provider) NewHTTPHandler() func(w http.ResponseWriter, r *http.Request)
 		request := new(healthpb.HealthCheckRequest)
 		response := new(healthpb.HealthCheckResponse)
 
-		// read request from body
-		if b, err := ioutil.ReadAll(r.Body); err != nil {
-			http.Error(w,
-				fmt.Sprintf("%s:%v", "could not read from http request", err),
-				http.StatusBadRequest)
-			return
-		} else {
-			if err := proto.Unmarshal(b, request); err != nil {
+		// read output format from query and override pre-initialized value
+		outputFormat := p.outputFormat
+		if keys, ok := r.URL.Query()[OutputFormatKey]; ok {
+			switch strings.ToLower(keys[0]) {
+			case string(OutputProto):
+				outputFormat = OutputProto
+			case string(OutputJSON):
+				outputFormat = OutputJSON
+			case string(OutputMesg):
+				outputFormat = OutputMesg
+			default:
 				http.Error(w,
-					fmt.Sprintf("%s:%v", "could not unmarshal request", err),
+					fmt.Sprintf("%s", "bad request output format"),
 					http.StatusBadRequest)
 				return
 			}
+		}
+
+		// either read from the body or from the path
+		if r.Body != nil {
+			// read request from body
+			if b, err := ioutil.ReadAll(r.Body); err != nil {
+				http.Error(w,
+					fmt.Sprintf("%s:%v", "could not read from http request", err),
+					http.StatusBadRequest)
+				return
+			} else {
+				if err := proto.Unmarshal(b, request); err != nil {
+					http.Error(w,
+						fmt.Sprintf("%s:%v", "could not unmarshal request", err),
+						http.StatusBadRequest)
+					return
+				}
+			}
+		} else {
+			// get service name from the url
+			request.Service = filepath.Base(r.URL.Path)
 		}
 
 		// check if request needs to be forwarded to upstream service health check
@@ -70,7 +97,7 @@ func (p *provider) NewHTTPHandler() func(w http.ResponseWriter, r *http.Request)
 		}
 
 		// prepare output per format
-		switch p.outputFormat {
+		switch outputFormat {
 		case OutputProto:
 			if b, err := proto.Marshal(response); err != nil {
 				http.Error(w,
@@ -143,4 +170,18 @@ func (p *provider) ReadResponseAndClose(resp *http.Response) (bool, string, erro
 	default:
 		return false, "", fmt.Errorf("invalid output format, cannot unmarshal")
 	}
+}
+
+func (p *provider) SetQuery(service, rawurl string) (string, error) {
+	u, err := url.Parse(rawurl)
+	if err != nil {
+		return "", err
+	}
+
+	q := u.Query()
+	q.Set(ServiceKey, service)
+	q.Set(OutputFormatKey, p.outputFormat.String())
+	u.RawQuery = q.Encode()
+
+	return u.String(), nil
 }
