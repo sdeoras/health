@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"path/filepath"
 	"strings"
 	"sync"
 
@@ -73,7 +72,14 @@ func (p *provider) NewHTTPHandler() func(w http.ResponseWriter, r *http.Request)
 			}
 		} else {
 			// get service name from the url
-			request.Service = filepath.Base(r.URL.Path)
+			if keys, ok := r.URL.Query()[ServiceKey]; ok {
+				request.Service = keys[0]
+			} else {
+				http.Error(w,
+					fmt.Sprintf("%s", "could not get service name in request body or url query"),
+					http.StatusBadRequest)
+				return
+			}
 		}
 
 		// check if request needs to be forwarded to upstream service health check
