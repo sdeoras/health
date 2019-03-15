@@ -54,8 +54,13 @@ func (p *provider) NewHTTPHandler() func(w http.ResponseWriter, r *http.Request)
 			}
 		}
 
+		// get service name from the url
+		if keys, ok := r.URL.Query()[ServiceKey]; ok {
+			request.Service = keys[0]
+		}
+
 		// either read from the body or from the path
-		if r.Body != nil {
+		if len(request.Service) == 0 && r.Body != nil {
 			// read request from body
 			if b, err := ioutil.ReadAll(r.Body); err != nil {
 				http.Error(w,
@@ -69,16 +74,6 @@ func (p *provider) NewHTTPHandler() func(w http.ResponseWriter, r *http.Request)
 						http.StatusBadRequest)
 					return
 				}
-			}
-		} else {
-			// get service name from the url
-			if keys, ok := r.URL.Query()[ServiceKey]; ok {
-				request.Service = keys[0]
-			} else {
-				http.Error(w,
-					fmt.Sprintf("%s", "could not get service name in request body or url query"),
-					http.StatusBadRequest)
-				return
 			}
 		}
 
