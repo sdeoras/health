@@ -6,15 +6,16 @@ import (
 
 // Provider provides ways to send and receive health status for your http micro-services
 type Provider interface {
+	// server side ---------
+
 	// Register registers upstream services and corresponding redirection.
 	// Pass nil handler if you wish to provide health status without further redirection.
 	Register(service string, handler func(w http.ResponseWriter, r *http.Request))
-
-	// server side ---------
 	// NewHTTPHandler provides a new http handler
 	NewHTTPHandler() func(w http.ResponseWriter, r *http.Request)
 
 	// client side ---------
+
 	// NewHTTPRequest prepares an http request for a service to check health status
 	NewHTTPRequest(service, url string) (*http.Request, error)
 	// SetQuery sets query in input url producing modified url
@@ -24,7 +25,6 @@ type Provider interface {
 }
 
 // New provides an instance of health check func Provider.
-// It takes jwt validator if jwt auth is required. Pass nil for jwt operator if not required.
 func NewProvider(outputFormat OutputFormat) Provider {
 	p := new(provider)
 	p.outputFormat = outputFormat

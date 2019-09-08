@@ -7,16 +7,13 @@ func (o OutputFormat) String() string {
 }
 
 const (
-	OutputProto OutputFormat = "proto"
-	OutputJSON               = "json"
-	OutputMesg               = "mesg"
-)
-
-const (
+	StdRoute        = "/health"
 	ServiceKey      = "service"
 	OutputFormatKey = "format"
 )
 
 const (
-	StdRoute = "/health"
+	OutputProto OutputFormat = "proto"
+	OutputJSON               = "json"
+	OutputMesg               = "mesg"
 )
